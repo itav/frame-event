@@ -5,6 +5,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing;
 use Symfony\Component\HttpKernel;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 function render_template(Request $request)
 {
@@ -22,7 +23,12 @@ $context = new Routing\RequestContext();
 $matcher = new Routing\Matcher\UrlMatcher($routes, $context);
 $resolver = new HttpKernel\Controller\ControllerResolver();
 
-$framework = new Itav\FrameEvent($matcher, $resolver);
+
+$dispatcher = new EventDispatcher();
+$dispatcher->addSubscriber(new Itav\ContentLengthListener());
+$dispatcher->addSubscriber(new Itav\GoogleListener());
+
+$framework = new Itav\FrameEvent($dispatcher, $matcher, $resolver);
 $response = $framework->handle($request);
 
 $response->send();
